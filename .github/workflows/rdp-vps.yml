@@ -5,14 +5,13 @@ on:
 
 jobs:
   secure-vps:
-    runs-on: ubuntu-latest # ⬅️ CHANGE: Switched to Ubuntu (Linux) runner
+    runs-on: ubuntu-latest
     timeout-minutes: 3600
 
     steps:
       - name: Create VPS User with Secure Password
         run: |
           # 1. Generate a secure random password (16 characters)
-          # Using tr and head for simple, fast password generation on Linux
           password=$(LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*()_+=-' < /dev/urandom | head -c 16)
           username="vpsuser"
           
@@ -33,7 +32,6 @@ jobs:
 
       - name: Configure SSH and Firewall
         run: |
-          # ⬅️ CHANGE: RDP steps removed, SSH is usually enabled on port 22.
           # 1. Ensure SSH server is installed and running
           sudo apt-get update
           sudo apt-get install -y openssh-server
@@ -47,11 +45,11 @@ jobs:
           # 4. Open port 22 on the internal firewall (if necessary, though GH runners are permissive)
           sudo ufw allow 22/tcp
 
-      - name: Install Tailscale
+      - name: Install Tailscale ⬅️ (This step was failing)
         run: |
-          # ⬅️ CHANGE: Linux (apt/curl) installation process
-          sudo curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.no-arch.gpg | sudo dd of=/usr/share/keyrings/tailscale-archive-keyring.gpg
-          sudo curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale.list | sudo dd of=/etc/apt/sources.list.d/tailscale.list
+          # FIX: Changed 'jammy' to 'noble' to match the ubuntu-latest (24.04) runner
+          sudo curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.no-arch.gpg | sudo dd of=/usr/share/keyrings/tailscale-archive-keyring.gpg
+          sudo curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale.list | sudo dd of=/etc/apt/sources.list.d/tailscale.list
           sudo apt-get update
           sudo apt-get install -y tailscale
 
@@ -88,7 +86,6 @@ jobs:
 
       - name: Maintain Connection
         run: |
-          # ⬅️ CHANGE: Using simple bash loop to keep the runner active
           echo -e "\n=== VPS (SSH) ACCESS INFO ==="
           echo "Address: $TAILSCALE_IP"
           echo "Username: vpsuser"
